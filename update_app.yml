@@ -1,0 +1,35 @@
+---
+- name: Actualizar aplicación Go
+  hosts: all
+  become: yes
+  vars:
+    ruta_ubuntu_debian: "/home/joseph/ansible/Ansible-AWX/Go App"
+    ruta_fedora: "/home/josephalmonte/ansible/Ansible-AWX/Go App"
+
+  tasks:
+    - name: Verificar si Docker Compose está corriendo
+      shell: docker-compose ps -q
+      args:
+        chdir: "{{ ruta_ubuntu_debian if ansible_distribution in ['Ubuntu', 'Debian'] else ruta_fedora }}"
+      register: docker_compose_ps
+      ignore_errors: yes
+
+    - name: Detener Docker Compose si está corriendo
+      command: docker-compose down
+      args:
+        chdir: "{{ ruta_ubuntu_debian if ansible_distribution in ['Ubuntu', 'Debian'] else ruta_fedora }}"
+      when: docker_compose_ps.stdout != ''
+
+    - name: Ejecutar git pull en el repositorio existente
+      command:
+        cmd: git pull origin main
+        chdir: "{{ ruta_ubuntu_debian if ansible_distribution in ['Ubuntu', 'Debian'] else ruta_fedora }}"
+      register: git_pull_result
+      changed_when: "'Already up to date.' not in git_pull_result.stdout"
+
+
+
+    - name: Levantar la aplicación con Docker Compose
+      command: docker-compose up -d --build
+      args:
+        chdir: "{{ ruta_ubuntu_debian if ansible_distribution in ['Ubuntu', 'Debian'] else ruta_fedora }}"
