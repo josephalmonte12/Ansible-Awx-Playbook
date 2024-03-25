@@ -1,6 +1,6 @@
 ---
 - name: Actualizar aplicación Go
-  hosts: all
+  hosts: group_servers
   become: yes
   vars:
     ruta_ubuntu_debian: "/home/joseph/ansible/Ansible-AWX/Go App"
